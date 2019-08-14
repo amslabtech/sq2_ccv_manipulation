@@ -1085,6 +1085,31 @@
 
       </plugin>
 
+
+
+
+      <!--plugin name='libgazebo_ros2_ccv_steer' filename='libgazebo_ros2_ccv_steer.so'>
+        <ros>
+          <namespace>/steer</namespace>
+        </ros>
+        <left_steer>link_0_JOINT_0</left_steer>
+        <right_steer>link_0_JOINT_1</right_steer>
+        <wheel_separation>0.8</wheel_separation>
+        <wheel_diameter>0.4</wheel_diameter>
+        <max_steer_acceleration>1</max_steer_acceleration>
+        <max_steer_torque>1</max_steer_torque>
+        <max_steer_vel>0.5</max_steer_vel>
+        <joint_status>1</joint_status>
+        <steer_type>0</steer_type>
+      </plugin-->
+
+
+
+
+
+
+
+
       <pose frame=''>0.124173 -0.080046 -0.059777 0 -0 0.000255</pose>
     </model>
   </world>
