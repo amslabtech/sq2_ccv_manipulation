@@ -39,7 +39,7 @@ new
 #undef NO_ERROR
 #endif
 
-
+double a= 0.0;
 double pi=M_PI;
 namespace gazebo_plugins
 {
@@ -364,8 +364,7 @@ void GazeboRos2CcvSteer::Load(gazebo::physics::ModelPtr _model, sdf::ElementPtr 
   // Listen to the update event (broadcast every simulation iteration)
   impl_->update_connection_ = gazebo::event::Events::ConnectWorldUpdateBegin(
     std::bind(&GazeboRos2CcvSteerPrivate::OnUpdate, impl_.get(), std::placeholders::_1));
-
-  RCLCPP_INFO(impl_->ros_node_->get_logger(),"First Ittration!!  Joints= %d", impl_->joints_.size());
+//*//
 
 }
 
@@ -540,7 +539,6 @@ New
     
   }
 
-  RCLCPP_INFO(ros_node_->get_logger(),"First Ittration!!  Joints= %d",last_update_time_);
 
 /*
 End
@@ -564,7 +562,9 @@ End
     PublishAngleStatus();
   }
   last_update_time_ = _info.simTime;
-  RCLCPP_INFO(ros_node_->get_logger(),"First Ittration!!  Joints= %d",last_update_time_);
+  RCLCPP_INFO(ros_node_->get_logger(),"%f",a);
+  a++;
+
 }
 
 /* New */
