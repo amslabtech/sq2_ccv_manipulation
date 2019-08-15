@@ -83,10 +83,10 @@
       <heading_deg>0</heading_deg>
     </spherical_coordinates>
     <state world_name='default'>
-      <sim_time>12 358000000</sim_time>
-      <real_time>11 715286189</real_time>
-      <wall_time>1565753806 74473070</wall_time>
-      <iterations>11687</iterations>
+      <sim_time>101 659000000</sim_time>
+      <real_time>89 504703666</real_time>
+      <wall_time>1565758490 749296451</wall_time>
+      <iterations>89301</iterations>
       <model name='ground_plane'>
         <pose frame=''>0 0 0 0 -0 0</pose>
         <scale>1 1 1</scale>
@@ -98,46 +98,46 @@
         </link>
       </model>
       <model name='steer_car'>
-        <pose frame=''>0.124173 -0.080046 -0.059777 0 -0 0.000255</pose>
+        <pose frame=''>0.12328 -0.071329 -0.059777 3e-06 -0 -0.014417</pose>
         <scale>1 1 1</scale>
         <link name='link_0'>
-          <pose frame=''>-0.009469 -0.079932 0.244817 0 -0 0.000255</pose>
+          <pose frame=''>-0.010346 -0.069255 0.244817 3e-06 -0 -0.014417</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
         <link name='link_1'>
-          <pose frame=''>0.990633 -0.479677 0.194817 0 -0 0.000255</pose>
+          <pose frame=''>0.983783 -0.48363 0.194816 3e-06 -0 -0.014417</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
         <link name='link_1_clone'>
-          <pose frame=''>0.990429 0.320323 0.194817 0 -0 0.000255</pose>
+          <pose frame=''>0.995317 0.316287 0.194818 3e-06 -0 -0.014417</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
         <link name='link_2'>
-          <pose frame=''>0.988639 -0.478686 0.2 1.5708 -0 0.000255</pose>
+          <pose frame=''>0.981804 -0.482609 0.199999 1.5708 -0 -0.014417</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
         <link name='link_2_clone'>
-          <pose frame=''>0.993968 0.318592 0.199999 1.5708 -0 0.000255</pose>
+          <pose frame=''>0.99883 0.314504 0.2 1.5708 -0 -0.014417</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
         <link name='link_2_clone_0'>
-          <pose frame=''>-0.309412 -0.30501 0.2 1.5708 -0 0.000255</pose>
+          <pose frame=''>-0.313559 -0.289908 0.199999 1.5708 -0 -0.014417</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
         <link name='link_2_clone_1'>
-          <pose frame=''>-0.309526 0.144992 0.2 1.5708 -0 0.000255</pose>
+          <pose frame=''>-0.307071 0.160047 0.200001 1.5708 -0 -0.014417</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
@@ -149,7 +149,7 @@
     </state>
     <gui fullscreen='0'>
       <camera name='user_camera'>
-        <pose frame=''>-2.66924 -0.32786 1.7321 0 0.211643 -0.094981</pose>
+        <pose frame=''>-0.304691 -0.971304 1.1086 0 0.571643 0.921019</pose>
         <view_controller>orbit</view_controller>
         <projection_type>perspective</projection_type>
       </camera>
@@ -986,11 +986,11 @@
         </physics>
       </joint>
       <joint name='link_1_JOINT_0' type='revolute'>
-        <parent>link_0</parent>
+        <parent>link_1</parent>
         <child>link_2</child>
         <pose frame=''>0 0 0 0 -0 0</pose>
         <axis>
-          <xyz>0 0 1</xyz>
+          <xyz>0 0 -1</xyz>
           <use_parent_model_frame>0</use_parent_model_frame>
           <limit>
             <lower>-1.79769e+308</lower>
@@ -1019,11 +1019,11 @@
         </physics>
       </joint>
       <joint name='link_1_clone_JOINT_1' type='revolute'>
-        <parent>link_0</parent>
+        <parent>link_1_clone</parent>
         <child>link_2_clone</child>
         <pose frame=''>0 0 0 0 -0 0</pose>
         <axis>
-          <xyz>0 0 1</xyz>
+          <xyz>0 0 -1</xyz>
           <use_parent_model_frame>0</use_parent_model_frame>
           <limit>
             <lower>-1.79769e+308</lower>
@@ -1054,63 +1054,47 @@
       <static>0</static>
       <allow_auto_disable>1</allow_auto_disable>
 
-  
-      <plugin name='diff_drive' filename='libgazebo_ros_diff_drive.so'>
+      <plugin name='diff_drive' filename='libgazebo_ros_steer_drive.so'>
 
         <ros>
-          <namespace>/demo</namespace>
+          <namespace>/steer</namespace>
           <argument>cmd_vel:=cmd_demo</argument>
           <argument>odom:=odom_demo</argument>
         </ros>
 
-        <!-- wheels -->
-        <left_joint>link_1_clone_JOINT_1</left_joint>
-        <right_joint>link_1_JOINT_0</right_joint>
+        <steer_type>0</steer_type>
+        <joint_status>0</joint_status>
+	<steer_status>0</steer_status>
 
-        <!-- kinematics -->
+        <left_joint>link_1_JOINT_0</left_joint>
+        <right_joint>link_1_clone_JOINT_1</right_joint>
+        <left_steer>link_0_JOINT_0</left_steer>
+        <right_steer>link_0_JOINT_1</right_steer>
+
+
+
         <wheel_separation>0.8</wheel_separation>
         <wheel_diameter>0.4</wheel_diameter>
 
-        <!-- limits -->
-        <max_wheel_torque>20</max_wheel_torque>
-        <max_wheel_acceleration>1.0</max_wheel_acceleration>
 
-        <!-- output -->
+        <max_wheel_torque>20.0</max_wheel_torque>
+        <max_wheel_acceleration>5.0</max_wheel_acceleration>
+        <max_steer_acceleration>5.0</max_steer_acceleration>
+        <max_steer_torque>20.0</max_steer_torque>
+        <max_steer_vel>0.5</max_steer_vel>
+
+        <odometry_frame>odom_demo</odometry_frame>
+
         <publish_odom>true</publish_odom>
         <publish_odom_tf>true</publish_odom_tf>
         <publish_wheel_tf>true</publish_wheel_tf>
-
-        <odometry_frame>odom_demo</odometry_frame>
-        <robot_base_frame>link_0</robot_base_frame>
 
       </plugin>
 
 
 
 
-      <!--plugin name='libgazebo_ros2_ccv_steer' filename='libgazebo_ros2_ccv_steer.so'>
-        <ros>
-          <namespace>/steer</namespace>
-        </ros>
-        <left_steer>link_0_JOINT_0</left_steer>
-        <right_steer>link_0_JOINT_1</right_steer>
-        <wheel_separation>0.8</wheel_separation>
-        <wheel_diameter>0.4</wheel_diameter>
-        <max_steer_acceleration>1</max_steer_acceleration>
-        <max_steer_torque>1</max_steer_torque>
-        <max_steer_vel>0.5</max_steer_vel>
-        <joint_status>1</joint_status>
-        <steer_type>0</steer_type>
-      </plugin-->
-
-
-
-
-
-
-
-
-      <pose frame=''>0.124173 -0.080046 -0.059777 0 -0 0.000255</pose>
+      <pose frame=''>0.12328 -0.071329 -0.059777 3e-06 -0 -0.014417</pose>
     </model>
   </world>
 </sdf>

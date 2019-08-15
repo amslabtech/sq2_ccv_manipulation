@@ -1,11 +1,62 @@
 
+// Copyright (c) 2010, Daniel Hewlett, Antons Rebguns
+// All rights reserved.
+//
+// Software License Agreement (BSD License 2.0)
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions
+// are met:
+//
+//  * Redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+//  * Redistributions in binary form must reproduce the above
+//    copyright notice, this list of conditions and the following
+//    disclaimer in the documentation and/or other materials provided
+//    with the distribution.
+//  * Neither the name of the company nor the names of its
+//    contributors may be used to endorse or promote products derived
+//    from this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+// FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+// COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+// INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+// BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+// LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+// LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+// ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+
+/*
+ * \file  gazebo_ros_diff_drive.cpp
+ *
+ * \brief A differential drive plugin for gazebo. Based on the diffdrive plugin
+ * developed for the erratic robot (see copyright notice above). The original
+ * plugin can be found in the ROS package gazebo_erratic_plugins.
+ *
+ * \author  Piyush Khandelwal (piyushk@gmail.com)
+ *
+ * $ Id: 06/21/2013 11:23:40 AM piyushk $
+ */
+
+/*
+ *
+ * The support of acceleration limit was added by
+ * \author   George Todoran <todorangrg@gmail.com>
+ * \author   Markus Bader <markus.bader@tuwien.ac.at>
+ * \date 22th of May 2014
+ */
 
 #include <gazebo/common/Time.hh>
 #include <gazebo/physics/Joint.hh>
 #include <gazebo/physics/Link.hh>
 #include <gazebo/physics/Model.hh>
 #include <gazebo/physics/World.hh>
-#include <gazebo_plugins/gazebo_ros_diff_drive.hpp>
+#include <r2_ccv_steer/gazebo_ros_steer_drive.hpp>
 #include <gazebo_ros/conversions/builtin_interfaces.hpp>
 #include <gazebo_ros/conversions/geometry_msgs.hpp>
 #include <gazebo_ros/node.hpp>
@@ -13,7 +64,9 @@
 #include <geometry_msgs/msg/twist.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <sdf/sdf.hh>
-
+#include <std_msgs/msg/float64.hpp>
+#include <angles/angles.h>
+#include <sensor_msgs/msg/joint_state.hpp>
 #ifdef NO_ERROR
 // NO_ERROR is a macro defined in Windows that's used as an enum in tf2
 #undef NO_ERROR
@@ -23,28 +76,41 @@
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2_ros/transform_listener.h>
 
+#include <math.h>
 #include <memory>
 #include <string>
 #include <vector>
+
+double pi=M_PI;
+
 
 namespace gazebo_plugins
 {
 class GazeboRosDiffDrivePrivate
 {
 public:
+  /// Indicates where the odometry info is coming from
   enum OdomSource
   {
+    /// Use an ancoder
     ENCODER = 0,
 
+    /// Use ground truth from simulation world
     WORLD = 1,
   };
 
+  /// Indicates which wheel
   enum
   {
+    STEER = 0,
+    STEER_1 =1,
+    /// Right wheel
     RIGHT = 0,
 
+    /// Left wheel
     LEFT = 1,
   };
+
 
   void OnUpdate(const gazebo::common::UpdateInfo & _info);
   void OnCmdVel(const geometry_msgs::msg::Twist::SharedPtr _msg);
@@ -83,6 +149,61 @@ public:
   bool publish_odom_tf_;
   unsigned int num_wheel_pairs_;
   double covariance_[3];
+
+
+  void OnSteerAngle(const std_msgs::msg::Float64::SharedPtr str_amsg);
+  void OnSteerVel(const std_msgs::msg::Float64::SharedPtr str_vmsg);
+  void OnSteerVelAngle(const std_msgs::msg::Float64::SharedPtr str_vamsg);
+  void PublishAngleStatus();
+  rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr joint_state_pub_;
+  rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr steer_state_pub_;
+  rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr steer_angle_sub_; 
+  rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr steer_vel_sub_; 
+  sensor_msgs::msg::JointState joint_state;
+  sensor_msgs::msg::JointState steer_state;
+  std::vector<gazebo::physics::JointPtr> steers_;
+
+
+  double direc_;
+  double travel_;
+  double travel_steer;
+  double max_steer_vel_; 
+  double max_steer_accel_;
+  double max_steer_torque_;
+  double desired_steer_vel_;
+  double desired_steer_angle_;
+  double steer_vel_instr_;
+  double init_steer_angle;
+  bool steer_type_;  
+  double a_diff;
+  double travel_up;
+
+  bool publish_angle_;
+  bool publish_joint_tf_;
+  bool joint_status_;
+  bool steer_status_;
+  bool acc_update_status_;
+  double travel_ang;
+  double C_vel;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 };
 
 GazeboRosDiffDrive::GazeboRosDiffDrive()
@@ -100,6 +221,111 @@ void GazeboRosDiffDrive::Load(gazebo::physics::ModelPtr _model, sdf::ElementPtr 
 
   // Initialize ROS node
   impl_->ros_node_ = gazebo_ros::Node::Get(_sdf);
+
+
+
+
+
+
+
+
+  impl_->steer_type_ = _sdf->Get<bool>("steer_type", false).first;
+// Get joints
+  impl_->steers_.resize(2);
+  auto left_steer = _sdf->Get<std::string>("left_steer", "left_steer").first;
+  impl_->steers_[GazeboRosDiffDrivePrivate::STEER] = _model->GetJoint(left_steer);
+  auto right_steer = _sdf->Get<std::string>("right_steer", "right_steer").first;
+  impl_->steers_[GazeboRosDiffDrivePrivate::STEER_1] = _model->GetJoint(right_steer);
+
+// Check joint availability
+  if (!impl_->steers_[GazeboRosDiffDrivePrivate::STEER]||!impl_->steers_[GazeboRosDiffDrivePrivate::STEER_1])
+  {
+    RCLCPP_ERROR(impl_->ros_node_->get_logger(),
+      "Joint [%s] or [%s] not found, plugin will not work.", left_steer.c_str(),right_steer.c_str());
+   impl_->ros_node_.reset();
+    return;
+  }
+
+
+
+// Kinematic properties
+  impl_->desired_steer_angle_ = 0;
+  
+// Dynamic properties-------------------------------------------------------------------------------------------------------------------2
+  impl_->max_steer_accel_ = _sdf->Get<double>("max_steer_acceleration", 0.0).first;
+  impl_->max_steer_torque_ = _sdf->Get<double>("max_steer_torque", 5.0).first;
+  impl_->max_steer_vel_ = _sdf->Get<double>("max_steer_vel", 0.5 ).first;
+  impl_->steers_[GazeboRosDiffDrivePrivate::STEER]->SetParam("fmax", 0, impl_->max_steer_torque_);
+  impl_->steers_[GazeboRosDiffDrivePrivate::STEER_1]->SetParam("fmax", 0, impl_->max_steer_torque_);
+
+
+// Set dependent values
+  impl_->travel_ = pow(impl_->max_steer_vel_,2.0)/impl_->max_steer_accel_;
+  impl_->steers_[GazeboRosDiffDrivePrivate::STEER]->SetPosition(0,0.0000);
+
+  impl_->steers_[GazeboRosDiffDrivePrivate::STEER_1]->SetPosition(0,0.0000);
+
+// Update rate  
+  auto update_rate = _sdf->Get<double>("update_rate", 1000.0).first;
+  if (update_rate > 0.0) {
+    impl_->update_period_ = 1.0 / update_rate;
+  } else {
+    impl_->update_period_ = 0.0;
+  }
+  impl_->last_update_time_ = _model->GetWorld()->SimTime();
+
+ 
+// // Joint state publisher
+//   impl_->joint_status_ = _sdf->Get<bool>("joint_status", false).first;
+//   if (impl_->joint_status_) {
+//     impl_->joint_state_pub_ = impl_->ros_node_->create_publisher<sensor_msgs::msg::JointState>("joint_status", rclcpp::QoS(rclcpp::KeepLast(1)));
+//     RCLCPP_INFO(impl_->ros_node_->get_logger(),"joint on [%s]", impl_->joint_state_pub_->get_topic_name());
+//     }
+
+// // Steer state publisher
+//   impl_->steer_status_ = _sdf->Get<bool>("steer_status", false).first;
+//   if (impl_->steer_status_) {
+//     impl_->steer_state_pub_ = impl_->ros_node_->create_publisher<sensor_msgs::msg::JointState>("steer_status", rclcpp::QoS(rclcpp::KeepLast(1)));
+//     RCLCPP_INFO(impl_->ros_node_->get_logger(),"Steer status on [%s]", impl_->steer_state_pub_->get_topic_name());
+//     }
+
+
+
+//  Print Test
+
+  RCLCPP_INFO(impl_->ros_node_->get_logger(),"First Ittration!!  Joints= %d", impl_->steers_.size());
+
+///// Manual
+  if (impl_->steer_type_) {
+////  Angle
+
+// Steer subscriber
+  impl_->steer_angle_sub_ = impl_->ros_node_->create_subscription<std_msgs::msg::Float64>("steer_angle",rclcpp::QoS(rclcpp::KeepLast(1)), std::bind(&GazeboRosDiffDrivePrivate::OnSteerAngle, impl_.get(),std::placeholders::_1));
+  RCLCPP_INFO(impl_->ros_node_->get_logger(), "Publish steer angle on [%s]",impl_->steer_angle_sub_->get_topic_name());
+//
+
+
+////  Velocity
+
+// Steer subscriber
+  impl_->steer_vel_sub_ = impl_->ros_node_->create_subscription<std_msgs::msg::Float64>("steer_vel",rclcpp::QoS(rclcpp::KeepLast(1)), std::bind(&GazeboRosDiffDrivePrivate::OnSteerVel, impl_.get(),std::placeholders::_1));
+  RCLCPP_INFO(impl_->ros_node_->get_logger(), "Publish steer vel on [%s]",impl_->steer_vel_sub_->get_topic_name());
+//
+  }
+
+///// Auto
+  else
+  {
+    impl_->steer_angle_sub_ = impl_->ros_node_->create_subscription<std_msgs::msg::Float64>("steer_vel_ang",rclcpp::QoS(rclcpp::KeepLast(1)), 
+      std::bind(&GazeboRosDiffDrivePrivate::OnSteerVelAngle, impl_.get(),std::placeholders::_1));
+    RCLCPP_INFO(impl_->ros_node_->get_logger(), "Subscribed to [%s] for FING Angle",impl_->steer_angle_sub_->get_topic_name());
+  }
+
+
+
+
+
+
 
   // Get number of wheel pairs in the model
   impl_->num_wheel_pairs_ = static_cast<unsigned int>(_sdf->Get<int>("num_wheel_pairs", 1).first);
@@ -193,14 +419,14 @@ void GazeboRosDiffDrive::Load(gazebo::physics::ModelPtr _model, sdf::ElementPtr 
   impl_->wheel_speed_instr_.assign(2 * impl_->num_wheel_pairs_, 0);
   impl_->desired_wheel_speed_.assign(2 * impl_->num_wheel_pairs_, 0);
 
-  // Update rate
-  auto update_rate = _sdf->Get<double>("update_rate", 100.0).first;
-  if (update_rate > 0.0) {
-    impl_->update_period_ = 1.0 / update_rate;
-  } else {
-    impl_->update_period_ = 0.0;
-  }
-  impl_->last_update_time_ = _model->GetWorld()->SimTime();
+  // // Update rate
+  // auto update_rate = _sdf->Get<double>("update_rate", 100.0).first;
+  // if (update_rate > 0.0) {
+  //   impl_->update_period_ = 1.0 / update_rate;
+  // } else {
+  //   impl_->update_period_ = 0.0;
+  // }
+  // impl_->last_update_time_ = _model->GetWorld()->SimTime();
 
   impl_->cmd_vel_sub_ = impl_->ros_node_->create_subscription<geometry_msgs::msg::Twist>(
     "cmd_vel", rclcpp::QoS(rclcpp::KeepLast(1)),
@@ -223,6 +449,7 @@ void GazeboRosDiffDrive::Load(gazebo::physics::ModelPtr _model, sdf::ElementPtr 
 
     RCLCPP_INFO(impl_->ros_node_->get_logger(), "Advertise odometry on [%s]",
       impl_->odometry_pub_->get_topic_name());
+
   }
 
   // Create TF broadcaster if needed
@@ -231,7 +458,6 @@ void GazeboRosDiffDrive::Load(gazebo::physics::ModelPtr _model, sdf::ElementPtr 
   if (impl_->publish_wheel_tf_ || impl_->publish_odom_tf_) {
     impl_->transform_broadcaster_ =
       std::make_shared<tf2_ros::TransformBroadcaster>(impl_->ros_node_);
-
     if (impl_->publish_odom_tf_) {
       RCLCPP_INFO(impl_->ros_node_->get_logger(),
         "Publishing odom transforms between [%s] and [%s]", impl_->odometry_frame_.c_str(),
@@ -247,11 +473,11 @@ void GazeboRosDiffDrive::Load(gazebo::physics::ModelPtr _model, sdf::ElementPtr 
           impl_->joints_[2 * index + GazeboRosDiffDrivePrivate::RIGHT]->GetName().c_str());
       }
     }
-  }
-
+  } 
   impl_->covariance_[0] = _sdf->Get<double>("covariance_x", 0.00001).first;
   impl_->covariance_[1] = _sdf->Get<double>("covariance_y", 0.00001).first;
   impl_->covariance_[2] = _sdf->Get<double>("covariance_yaw", 0.001).first;
+
 
   // Listen to the update event (broadcast every simulation iteration)
   impl_->update_connection_ = gazebo::event::Events::ConnectWorldUpdateBegin(
@@ -353,6 +579,106 @@ void GazeboRosDiffDrivePrivate::OnUpdate(const gazebo::common::UpdateInfo & _inf
       joints_[2 * i + RIGHT]->SetParam(
         "vel", 0, wheel_speed_instr_[2 * i + RIGHT] / (wheel_diameter_[i] / 2.0));
     }
+    /*
+New
+ */
+
+// Current values
+  double current_steer_angle;
+  double current_vel;
+  double stop_angle;
+
+  stop_angle = 0.0;
+  current_steer_angle = steers_[STEER]->Position(0);
+  current_vel = fabs(steers_[STEER]->GetVelocity(0));
+  if (fabs(desired_steer_angle_ - current_steer_angle) < 0.00005)
+  {
+    steers_[STEER]->SetParam("vel", 0, stop_angle);
+    steers_[STEER]->SetPosition(0,desired_steer_angle_);
+    steers_[STEER_1]->SetParam("vel", 0, stop_angle);
+    steers_[STEER_1]->SetPosition(0,desired_steer_angle_);
+    steer_vel_instr_=0.0;
+  }
+
+  else
+  {
+    if (fabs(init_steer_angle-current_steer_angle)<travel_steer)
+    {
+      if (fabs(desired_steer_vel_ - steer_vel_instr_) <= 0.001){
+        steer_vel_instr_ =desired_steer_vel_;
+      }
+      else
+      {
+      steer_vel_instr_ += fmin(desired_steer_vel_ - current_vel,max_steer_accel_*seconds_since_last_update);
+      }
+    }
+    else
+    {
+      desired_steer_vel_= 0.00000;
+      if (fabs(steer_vel_instr_ - desired_steer_vel_) <= 0.001){
+        steer_vel_instr_ =desired_steer_vel_;
+      }
+      else
+      {
+        steer_vel_instr_ += fmin(current_vel-desired_steer_vel_,-max_steer_accel_*seconds_since_last_update);
+      }
+    }
+
+
+    // RCLCPP_INFO(ros_node_->get_logger(),"%f / %f               %f            %f / %f",
+    //   current_vel[BASE],current_angle[BASE]-init_angle[BASE],
+    //   steer_vel_instr_[BASE],
+    //   desired_steer_vel_[BASE],travel_up[BASE]);
+    if (direc_<0.0){
+      steers_[STEER]->SetParam("vel", 0, -steer_vel_instr_);
+      steers_[STEER_1]->SetParam("vel", 0, -steer_vel_instr_);
+    }
+    else
+    {
+      steers_[STEER]->SetParam("vel", 0, steer_vel_instr_);
+      steers_[STEER_1]->SetParam("vel", 0, steer_vel_instr_);
+    }
+    
+    
+  }
+
+   
+/*
+End
+ */
+  gazebo::common::Time current_time = _info.simTime;
+  joint_state.header.stamp = gazebo_ros::Convert<builtin_interfaces::msg::Time>(current_time);
+  joint_state.name.resize(joints_.size());
+  joint_state.position.resize(joints_.size());
+  joint_state.velocity.resize(joints_.size());
+
+  for (unsigned int i = 0; i < joints_.size(); ++i) {
+    auto joint = joints_[i];
+    double velocity = joint->GetVelocity(0);
+    double position = joint->Position(0)*180/pi;
+    joint_state.name[i] = joint->GetName();
+    joint_state.position[i] = position;
+    joint_state.velocity[i] = velocity;
+  }
+
+  steer_state.header.stamp = gazebo_ros::Convert<builtin_interfaces::msg::Time>(current_time);
+  steer_state.name.resize(steers_.size());
+  steer_state.position.resize(steers_.size());
+  steer_state.velocity.resize(steers_.size());
+
+  for (unsigned int i = 0; i < steers_.size(); ++i) {
+    auto steer = steers_[i];
+    double velocity = steer->GetVelocity(0);
+    double position = steer->Position(0)*180/pi;
+    steer_state.name[i] = steer->GetName();
+    steer_state.position[i] = position;
+    steer_state.velocity[i] = velocity;
+  }
+
+  if (joint_status_){
+    PublishAngleStatus();
+  }
+  last_update_time_ = _info.simTime;
   }
 
   last_update_time_ = _info.simTime;
@@ -495,5 +821,98 @@ void GazeboRosDiffDrivePrivate::PublishOdometryMsg(const gazebo::common::Time & 
   // Publish
   odometry_pub_->publish(odom_);
 }
+
+
+/* NEW */
+void GazeboRosDiffDrivePrivate::OnSteerAngle(const std_msgs::msg::Float64::SharedPtr str_amsg_)
+{
+  std::lock_guard<std::mutex> scoped_lock(lock_);
+  desired_steer_angle_ = (str_amsg_->data*pi)/180.00;
+  init_steer_angle = steers_[STEER]->Position(0);
+  a_diff=fabs(desired_steer_angle_-init_steer_angle);
+  if (a_diff>=travel_steer)
+    {
+      travel_ang=travel_steer;
+      C_vel=max_steer_vel_;
+    }
+  else
+    {
+      travel_ang=pow(a_diff,2.0) / (2.0*max_steer_accel_);
+      C_vel=sqrt(travel_ang*max_steer_accel_);
+    }
+  travel_ang=pow(desired_steer_vel_,2.0)/(2.0*max_steer_accel_);
+  travel_up=a_diff-travel_ang;
+
+}
+// Set desired velocity
+void GazeboRosDiffDrivePrivate::OnSteerVel(const std_msgs::msg::Float64::SharedPtr str_vmsg_)
+{
+  std::lock_guard<std::mutex> scoped_lock(lock_);
+  desired_steer_vel_ = str_vmsg_->data;;
+
+  if (desired_steer_vel_<0)
+  {
+    direc_=-1.0;
+    desired_steer_vel_=-desired_steer_vel_;
+  }
+  else
+  {
+    direc_=1.0;
+  }
+  if (desired_steer_vel_>max_steer_vel_){
+    RCLCPP_INFO(ros_node_->get_logger(), "Desired vel is higher than max vel:  %f ", max_steer_vel_);
+    desired_steer_vel_ = max_steer_vel_;
+  }
+  RCLCPP_INFO(ros_node_->get_logger(), "steer --- in --- ??? =  %f m/s", desired_steer_vel_);
+}
+
+// Set desired Position with auto vel
+void GazeboRosDiffDrivePrivate::OnSteerVelAngle(const std_msgs::msg::Float64::SharedPtr str_vamsg_){
+  std::lock_guard<std::mutex> scoped_lock(lock_);
+  desired_steer_angle_ = (str_vamsg_->data*pi)/180.00;
+  init_steer_angle = steers_[STEER]->Position(0);
+  a_diff=fabs(desired_steer_angle_-init_steer_angle);
+  if (desired_steer_angle_<init_steer_angle)
+  {
+    direc_=-1.0;
+  }
+  else
+  {
+    direc_=1.0;
+  }
+  if (a_diff>=travel_)
+    {
+      travel_ang=travel_/3.0;
+      desired_steer_vel_=max_steer_vel_;
+    }
+  else
+    {
+      //travel_ang=pow(max_steer_vel_,2.0)/(2.0*max_steer_accel_);
+      travel_ang=a_diff/3.0;
+      desired_steer_vel_=sqrt(travel_ang*max_steer_accel_);
+    }
+  //travel_ang=travel_ang/2;
+  travel_steer=a_diff-travel_ang;
+  RCLCPP_INFO(ros_node_->get_logger(), "[STEER]");
+  RCLCPP_INFO(ros_node_->get_logger(), "Total Travel =  %f deg", a_diff);
+  RCLCPP_INFO(ros_node_->get_logger(), "To Travel =  %f deg", travel_steer);
+  RCLCPP_INFO(ros_node_->get_logger(), "Change time =  %f deg", travel_ang);
+  RCLCPP_INFO(ros_node_->get_logger(), "Dogs --- in --- deg =  %f deg", str_vamsg_->data);
+  RCLCPP_INFO(ros_node_->get_logger(), "Dogs --- in --- rad =  %f rad", desired_steer_angle_);
+  RCLCPP_INFO(ros_node_->get_logger(), "Joint --- in --- ??? =  %f m/s", desired_steer_vel_);
+
+}
+
+
+//Angle Status Publish
+
+
+void GazeboRosDiffDrivePrivate::PublishAngleStatus()
+{
+  joint_state_pub_->publish(joint_state);
+  steer_state_pub_->publish(steer_state);
+}
+
+
 GZ_REGISTER_MODEL_PLUGIN(GazeboRosDiffDrive)
 }  // namespace gazebo_plugins

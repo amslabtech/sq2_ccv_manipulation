@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 project(r2_ccv_steer)
 
+
 # Default to C++14
 if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 14)
@@ -33,21 +34,21 @@ include_directories(include
 )
 link_directories(${gazebo_dev_LIBRARY_DIRS})
 
-add_library(gazebo_ros2_ccv_steer SHARED
-  src/gazebo_ros2_ccv_steer.cpp
+add_library(gazebo_ros_steer_drive SHARED
+  src/gazebo_ros_steer_drive.cpp
 )
-ament_target_dependencies(gazebo_ros2_ccv_steer
+ament_target_dependencies(gazebo_ros_steer_drive
   "gazebo_dev"
   "gazebo_ros"
   "geometry_msgs"
   "nav_msgs"
-  "sensor_msgs"
   "rclcpp"
   "tf2"
   "tf2_geometry_msgs"
   "tf2_ros"
 )
-ament_export_libraries(gazebo_ros2_ccv_steer)
+ament_export_libraries(gazebo_ros_steer_drive)
+
 
 ament_export_include_directories(include)
 ament_export_dependencies(rclcpp)
@@ -60,8 +61,7 @@ install(DIRECTORY include/
         DESTINATION include)
 
 install(TARGETS
-    gazebo_ros2_ccv_steer
+    gazebo_ros_steer_drive
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin)
-
