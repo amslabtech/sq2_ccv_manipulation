@@ -8,7 +8,8 @@ setup(
     packages=[],
     py_modules=[
         'spawn_ccv',
-        'twist_ccv'
+        'twist_ccv',
+        'keyop_ccv'
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -29,7 +30,8 @@ setup(
     entry_points={
         'console_scripts': [
             'spawn_ccv = spawn_ccv:main',
-            'twist_ccv = twist_ccv:main'
+            'twist_ccv = twist_ccv:main',
+            'keyop_ccv = keyop_ccv:main'
             ],
     },
 )
