@@ -30,9 +30,9 @@ $ ros2 run ros1_bridge dynamic_bridge
 ```bash
 $ ./run_nvidia_docker.sh
 
-# cd catkin_ws/
-# catkin_make; source devel/setup.bash
-# roslaunch sq2_ccv_description gazebo.launch
+cd catkin_ws/
+catkin_make; source devel/setup.bash
+roslaunch sq2_ccv_description gazebo.launch
 ```
 
 ターミナル4でpublisher起動
