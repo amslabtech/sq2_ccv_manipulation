@@ -1,4 +1,4 @@
-# sw2_ccv_manipulation
+# sq2_ccv_manipulation
 
 ROS2 version: Dashing Diademata
 
