@@ -1,37 +1,45 @@
 # sw2_ccv_manipulation
 
+ROS2 version: Dashing Diademata
+
+## install
+
+```
+$ pip3 install -r requirements.txt
+```
+
 ## bridgeの仕方
 
 docker内でgazeboを起動し、sq2_ccvをsq2_ccv_manipulation/twist_ccvで動かしたいとき、
 
 ターミナル1で
 ```bash
-r1
-roscore
+$ r1
+$ roscore
 ```
 
 ターミナル2でbridge起動
 
 ```bash
-r1 #r1が先
-r2d
-ros2 run ros1_bridge dynamic_bridge
+$ r1 #r1が先
+$ r2d
+$ ros2 run ros1_bridge dynamic_bridge
 ```
 
 ターミナル3でdocker起動
 ```bash
 $ ./run_nvidia_docker.sh
 
-cd catkin_ws/
-catkin_make; source devel/setup.bash
-roslaunch sq2_ccv_description gazebo.launch
+# cd catkin_ws/
+# catkin_make; source devel/setup.bash
+# roslaunch sq2_ccv_description gazebo.launch
 ```
 
 ターミナル4でpublisher起動
 
 ```bash
-cd ~/ccv_ws
-r2d
-rs
-ros2 run sq2_ccv_manipulation twist_ccv 
+$ cd ~/ccv_ws
+$ r2d
+$ rs
+$ ros2 run sq2_ccv_manipulation twist_ccv 
 ```
