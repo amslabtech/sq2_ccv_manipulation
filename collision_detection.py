@@ -1,14 +1,13 @@
 import rclpy
 from rclpy.node import Node
-from geometry_msgs.msg import Twist
 from std_msgs.msg import String
-from pynput.keyboard import Key, Listener
-import time
  
 class CollisionDetector(Node):
 
     def __init__(self):
-        pass
+        self.sub1 = self.create_subscription(String, '/scan1', 10)
+        self.sub2 = self.create_subscription(String, '/scan2', 10)
+        self.sub3 = self.create_subscription(String, '/scan3', 10)
 
 def main(args=None):
     rclpy.init(args=args)
@@ -19,6 +18,6 @@ def main(args=None):
         if detector not in locals():
             detector.destroy_node()
         rclpy.shutdown()
-        
+
 if __name__ == '__main__':
     main()
