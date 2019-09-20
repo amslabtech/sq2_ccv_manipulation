@@ -8,7 +8,7 @@ import time
 class Keyboard(Node):
 
     def __init__(self):
-        super().__init__('text')
+        super().__init__('keyop_ccv')
         self.pub = self.create_publisher(String, '/demo/keyboard', 10)
         self.pub_twist = self.create_publisher(Twist, '/sq2_ccv/diff_drive_steering_controller/cmd_vel', 10)
         self.actions = dict()

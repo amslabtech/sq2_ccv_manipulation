@@ -7,7 +7,7 @@ from geometry_msgs.msg import Twist
 class Agent(Node):
 
     def __init__(self):
-        super().__init__('sq2_ccv')
+        super().__init__('twist_ccv')
         self.pub = self.create_publisher(Twist, '/sq2_ccv/diff_drive_steering_controller/cmd_vel', 10)
         self.reset_sim = self.create_client(Empty, '/reset_simulation')
         self.time_period = 0.1

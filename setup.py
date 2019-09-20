@@ -9,7 +9,8 @@ setup(
     py_modules=[
         'spawn_ccv',
         'twist_ccv',
-        'keyop_ccv'
+        'keyop_ccv',
+        'collision_detection'
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -31,7 +32,8 @@ setup(
         'console_scripts': [
             'spawn_ccv = spawn_ccv:main',
             'twist_ccv = twist_ccv:main',
-            'keyop_ccv = keyop_ccv:main'
+            'keyop_ccv = keyop_ccv:main',
+            'collision_detection = collision_detection:main'
             ],
     },
 )
