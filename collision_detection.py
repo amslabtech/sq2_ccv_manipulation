@@ -15,7 +15,7 @@ class CollisionDetector(Node):
             LaserScan, '/scan2', self.scan_sub, 10)
         self.sub_scan3 = self.create_subscription(
             LaserScan, '/scan3', self.scan_sub, 10)
-
+        self.count = 0
         self.fig = plt.figure(figsize=(9, 3))
         self.axes = []
         for i in range(3):
@@ -27,10 +27,10 @@ class CollisionDetector(Node):
         )
 
     def scan_sub(self, oscan):
-        print(oscan.header)
         label = oscan.header.frame_id
         scan_id = int(label[5]) - 1
-        diff = self.baseline - np.array(oscan.ranges)
+        diff = 1 - np.array(oscan.ranges)/self.baseline
+        self.collision_notifier(diff)
         self.axes[scan_id].cla()
         self.axes[scan_id].set_title(label)
         self.axes[scan_id].set_xlim([-0.7, 0.7])
@@ -38,10 +38,16 @@ class CollisionDetector(Node):
         self.axes[0].set_ylabel("change rate")
         self.axes[scan_id].set_ylim([0, 1])
         self.axes[scan_id].plot(
-            np.arange(-0.7, 0.7, 1.4 / 416), diff / self.baseline)
+            np.arange(-0.7, 0.7, 1.4 / 416), diff)
         plt.pause(0.1)
-        print("max val:", np.max(diff))
 
+    def collision_notifier(self, diff):
+        # if diff[207] >= 0.15:
+        N = 50
+        th = 0.15
+        if sum(diff[207-int(N/2):207+int(N/2)] < np.ones(N)*th) != N: # -pi/6 <= theta <= pi/6
+            self.count += 1
+            print("collision detected", self.count)
 
 def main(args=None):
 
