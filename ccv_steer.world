@@ -83,10 +83,10 @@
       <heading_deg>0</heading_deg>
     </spherical_coordinates>
     <state world_name='default'>
-      <sim_time>101 659000000</sim_time>
-      <real_time>89 504703666</real_time>
-      <wall_time>1565758490 749296451</wall_time>
-      <iterations>89301</iterations>
+      <sim_time>486 445000000</sim_time>
+      <real_time>487 13980588</real_time>
+      <wall_time>1569409840 396980527</wall_time>
+      <iterations>486445</iterations>
       <model name='ground_plane'>
         <pose frame=''>0 0 0 0 -0 0</pose>
         <scale>1 1 1</scale>
@@ -98,46 +98,46 @@
         </link>
       </model>
       <model name='steer_car'>
-        <pose frame=''>0.12328 -0.071329 -0.059777 3e-06 -0 -0.014417</pose>
+        <pose frame=''>0.112892 -0.088763 -0.059829 1e-06 0.00012 -0.012769</pose>
         <scale>1 1 1</scale>
         <link name='link_0'>
-          <pose frame=''>-0.010346 -0.069255 0.244817 3e-06 -0 -0.014417</pose>
+          <pose frame=''>-0.020701 -0.086909 0.244781 1e-06 0.00012 -0.012769</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
         <link name='link_1'>
-          <pose frame=''>0.983783 -0.48363 0.194816 3e-06 -0 -0.014417</pose>
+          <pose frame=''>0.974104 -0.499645 0.194661 1e-06 0.00012 -0.012769</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
         <link name='link_1_clone'>
-          <pose frame=''>0.995317 0.316287 0.194818 3e-06 -0 -0.014417</pose>
+          <pose frame=''>0.984319 0.30029 0.194661 1e-06 0.00012 -0.012769</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
         <link name='link_2'>
-          <pose frame=''>0.981804 -0.482609 0.199999 1.5708 -0 -0.014417</pose>
+          <pose frame=''>0.972124 -0.498628 0.199844 1.5708 0.00012 -0.012769</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
         <link name='link_2_clone'>
-          <pose frame=''>0.99883 0.314504 0.2 1.5708 -0 -0.014417</pose>
+          <pose frame=''>0.987836 0.298512 0.199843 1.5708 0.00012 -0.012769</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
         <link name='link_2_clone_0'>
-          <pose frame=''>-0.313559 -0.289908 0.199999 1.5708 -0 -0.014417</pose>
+          <pose frame=''>-0.323555 -0.308061 0.2 1.5708 0.00012 -0.012769</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
         <link name='link_2_clone_1'>
-          <pose frame=''>-0.307071 0.160047 0.200001 1.5708 -0 -0.014417</pose>
+          <pose frame=''>-0.317809 0.141904 0.2 1.5708 0.00012 -0.012769</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
@@ -149,7 +149,7 @@
     </state>
     <gui fullscreen='0'>
       <camera name='user_camera'>
-        <pose frame=''>-0.304691 -0.971304 1.1086 0 0.571643 0.921019</pose>
+        <pose frame=''>3.88107 -6.0312 5.91195 0 0.676977 2.01437</pose>
         <view_controller>orbit</view_controller>
         <projection_type>perspective</projection_type>
       </camera>
@@ -157,14 +157,14 @@
     <model name='steer_car'>
       <link name='link_0'>
         <inertial>
-          <mass>1</mass>
+          <mass>0.08</mass>
           <inertia>
-            <ixx>0.166667</ixx>
+            <ixx>0.00133333</ixx>
             <ixy>0</ixy>
             <ixz>0</ixz>
-            <iyy>0.166667</iyy>
+            <iyy>0.00693333</iyy>
             <iyz>0</iyz>
-            <izz>0.166667</izz>
+            <izz>0.00773333</izz>
           </inertia>
           <pose frame=''>0 0 0 0 -0 0</pose>
         </inertial>
@@ -255,14 +255,14 @@
       </link>
       <link name='link_1'>
         <inertial>
-          <mass>1</mass>
+          <mass>1.6e-05</mass>
           <inertia>
-            <ixx>0.145833</ixx>
+            <ixx>0</ixx>
             <ixy>0</ixy>
             <ixz>0</ixz>
-            <iyy>0.145833</iyy>
+            <iyy>0</iyy>
             <iyz>0</iyz>
-            <izz>0.125</izz>
+            <izz>0</izz>
           </inertia>
           <pose frame=''>0 0 0 0 -0 0</pose>
         </inertial>
@@ -355,14 +355,14 @@
       </link>
       <link name='link_1_clone'>
         <inertial>
-          <mass>1</mass>
+          <mass>1.6e-05</mass>
           <inertia>
-            <ixx>0.145833</ixx>
+            <ixx>0</ixx>
             <ixy>0</ixy>
             <ixz>0</ixz>
-            <iyy>0.145833</iyy>
+            <iyy>0</iyy>
             <iyz>0</iyz>
-            <izz>0.125</izz>
+            <izz>0</izz>
           </inertia>
           <pose frame=''>0 0 0 0 -0 0</pose>
         </inertial>
@@ -455,14 +455,14 @@
       </link>
       <link name='link_2'>
         <inertial>
-          <mass>1</mass>
+          <mass>0.2</mass>
           <inertia>
-            <ixx>0.145833</ixx>
+            <ixx>0.00204167</ixx>
             <ixy>0</ixy>
             <ixz>0</ixz>
-            <iyy>0.145833</iyy>
+            <iyy>0.00204167</iyy>
             <iyz>0</iyz>
-            <izz>0.125</izz>
+            <izz>0.004</izz>
           </inertia>
           <pose frame=''>0 0 0 0 -0 0</pose>
         </inertial>
@@ -555,14 +555,14 @@
       </link>
       <link name='link_2_clone'>
         <inertial>
-          <mass>1</mass>
+          <mass>0.2</mass>
           <inertia>
-            <ixx>0.145833</ixx>
+            <ixx>0.00204167</ixx>
             <ixy>0</ixy>
             <ixz>0</ixz>
-            <iyy>0.145833</iyy>
+            <iyy>0.00204167</iyy>
             <iyz>0</iyz>
-            <izz>0.125</izz>
+            <izz>0.004</izz>
           </inertia>
           <pose frame=''>0 0 0 0 -0 0</pose>
         </inertial>
@@ -655,14 +655,14 @@
       </link>
       <link name='link_2_clone_0'>
         <inertial>
-          <mass>1</mass>
+          <mass>0.008</mass>
           <inertia>
-            <ixx>0.145833</ixx>
+            <ixx>8.167e-05</ixx>
             <ixy>0</ixy>
             <ixz>0</ixz>
-            <iyy>0.145833</iyy>
+            <iyy>8.167e-05</iyy>
             <iyz>0</iyz>
-            <izz>0.125</izz>
+            <izz>0.00016</izz>
           </inertia>
           <pose frame=''>0 0 0 0 -0 0</pose>
         </inertial>
@@ -755,14 +755,14 @@
       </link>
       <link name='link_2_clone_1'>
         <inertial>
-          <mass>1</mass>
+          <mass>0.008</mass>
           <inertia>
-            <ixx>0.145833</ixx>
+            <ixx>8.167e-05</ixx>
             <ixy>0</ixy>
             <ixz>0</ixz>
-            <iyy>0.145833</iyy>
+            <iyy>8.167e-05</iyy>
             <iyz>0</iyz>
-            <izz>0.125</izz>
+            <izz>0.00016</izz>
           </inertia>
           <pose frame=''>0 0 0 0 -0 0</pose>
         </inertial>
@@ -1053,48 +1053,30 @@
       </joint>
       <static>0</static>
       <allow_auto_disable>1</allow_auto_disable>
-
-      <plugin name='diff_drive' filename='libgazebo_ros_steer_drive.so'>
-
+      <plugin name='steer_drive' filename='libgazebo_ros_steer_drive.so'>
         <ros>
           <namespace>/steer</namespace>
-          <argument>cmd_vel:=cmd_demo</argument>
-          <argument>odom:=odom_demo</argument>
         </ros>
-
         <steer_type>0</steer_type>
         <joint_status>0</joint_status>
-	<steer_status>0</steer_status>
-
+        <steer_status>0</steer_status>
         <left_joint>link_1_JOINT_0</left_joint>
         <right_joint>link_1_clone_JOINT_1</right_joint>
         <left_steer>link_0_JOINT_0</left_steer>
         <right_steer>link_0_JOINT_1</right_steer>
-
-
-
         <wheel_separation>0.8</wheel_separation>
         <wheel_diameter>0.4</wheel_diameter>
-
-
         <max_wheel_torque>20.0</max_wheel_torque>
         <max_wheel_acceleration>5.0</max_wheel_acceleration>
         <max_steer_acceleration>5.0</max_steer_acceleration>
         <max_steer_torque>20.0</max_steer_torque>
         <max_steer_vel>0.5</max_steer_vel>
-
         <odometry_frame>odom_demo</odometry_frame>
-
-        <publish_odom>true</publish_odom>
-        <publish_odom_tf>true</publish_odom_tf>
-        <publish_wheel_tf>true</publish_wheel_tf>
-
+        <publish_odom>1</publish_odom>
+        <publish_odom_tf>1</publish_odom_tf>
+        <publish_wheel_tf>1</publish_wheel_tf>
       </plugin>
-
-
-
-
-      <pose frame=''>0.12328 -0.071329 -0.059777 3e-06 -0 -0.014417</pose>
+      <pose frame=''>0.112892 -0.088763 -0.059829 1e-06 0.00012 -0.012769</pose>
     </model>
   </world>
 </sdf>

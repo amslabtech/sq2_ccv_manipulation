@@ -30,8 +30,8 @@
 // ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef GAZEBO_PLUGINS__GAZEBO_ROS_DIFF_DRIVE_HPP_
-#define GAZEBO_PLUGINS__GAZEBO_ROS_DIFF_DRIVE_HPP_
+#ifndef GAZEBO_PLUGINS__GAZEBO_ROS_STEER_DRIVE_HPP_
+#define GAZEBO_PLUGINS__GAZEBO_ROS_STEER_DRIVE_HPP_
 
 #include <gazebo/common/Plugin.hh>
 
@@ -39,9 +39,9 @@
 
 namespace gazebo_plugins
 {
-class GazeboRosDiffDrivePrivate;
+class GazeboRosSteerDrivePrivate;
 
-/// A differential drive plugin for gazebo. Based on the diffdrive plugin
+/// A steer-differential drive plugin for gazebo. Based on the steer-diff drive plugin
 /*
  * developed for the erratic robot (see copyright notice above). The original
  * plugin can be found in the ROS package gazebo_erratic_plugins.
@@ -53,7 +53,7 @@ class GazeboRosDiffDrivePrivate;
 /**
   Example Usage:
   \code{.xml}
-    <plugin name="gazebo_ros_diff_drive" filename="libgazebo_ros_diff_drive.so">
+    <plugin name="gazebo_ros_steer_drive" filename="libgazebo_ros_steer_drive.so">
 
       <ros>
 
@@ -65,17 +65,30 @@ class GazeboRosDiffDrivePrivate;
       <!-- Update rate in Hz -->
       <update_rate>50</update_rate>
 
+      <!--Options-->
+      <steer_type>0</steer_type>
+      <joint_status>0</joint_status>
+      <steer_status>0</steer_status>
+
+
       <!-- wheels -->
-      <left_joint>left_wheel_joint</left_joint>
-      <right_joint>right_wheel_joint</right_joint>
+      <left_joint>link_1_JOINT_0</left_joint>
+      <right_joint>link_1_clone_JOINT_1</right_joint>
+      <left_steer>link_0_JOINT_0</left_steer>
+      <right_steer>link_0_JOINT_1</right_steer>
 
       <!-- kinematics -->
-      <wheel_separation>1.25</wheel_separation>
-      <wheel_diameter>0.6</wheel_diameter>
+      <wheel_separation>0.8</wheel_separation>
+      <wheel_diameter>0.4</wheel_diameter>
 
       <!-- limits -->
       <max_wheel_torque>20</max_wheel_torque>
       <max_wheel_acceleration>1.0</max_wheel_acceleration>
+      <max_wheel_torque>20.0</max_wheel_torque>
+      <max_wheel_acceleration>5.0</max_wheel_acceleration>
+      <max_steer_acceleration>5.0</max_steer_acceleration>
+      <max_steer_torque>20.0</max_steer_torque>
+      <max_steer_vel>0.5</max_steer_vel>
 
       <!-- input -->
       <command_topic>cmd_vel</command_topic>
@@ -85,21 +98,23 @@ class GazeboRosDiffDrivePrivate;
       <publish_odom_tf>true</publish_odom_tf>
       <publish_wheel_tf>true</publish_wheel_tf>
 
+      <!-- odom -->
+      <robot_base_frame>chassis</robot_base_frame>
       <odometry_topic>odom</odometry_topic>
       <odometry_frame>odom</odometry_frame>
-      <robot_base_frame>chassis</robot_base_frame>
+      <odometry_frame>odom_demo</odometry_frame>
 
     </plugin>
   \endcode
 */
-class GazeboRosDiffDrive : public gazebo::ModelPlugin
+class GazeboRosSteerDrive : public gazebo::ModelPlugin
 {
 public:
   /// Constructor
-  GazeboRosDiffDrive();
+  GazeboRosSteerDrive();
 
   /// Destructor
-  ~GazeboRosDiffDrive();
+  ~GazeboRosSteerDrive();
 
 protected:
   // Documentation inherited
@@ -110,8 +125,8 @@ protected:
 
 private:
   /// Private data pointer
-  std::unique_ptr<GazeboRosDiffDrivePrivate> impl_;
+  std::unique_ptr<GazeboRosSteerDrivePrivate> impl_;
 };
 }  // namespace gazebo_plugins
 
-#endif  // GAZEBO_PLUGINS__GAZEBO_ROS_DIFF_DRIVE_HPP_
+#endif  // GAZEBO_PLUGINS__GAZEBO_ROS_STEER_DRIVE_HPP_

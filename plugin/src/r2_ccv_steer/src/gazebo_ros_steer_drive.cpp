@@ -86,7 +86,7 @@ double pi=M_PI;
 
 namespace gazebo_plugins
 {
-class GazeboRosDiffDrivePrivate
+class GazeboRosSteerDrivePrivate
 {
 public:
   /// Indicates where the odometry info is coming from
@@ -206,16 +206,16 @@ public:
 
 };
 
-GazeboRosDiffDrive::GazeboRosDiffDrive()
-: impl_(std::make_unique<GazeboRosDiffDrivePrivate>())
+GazeboRosSteerDrive::GazeboRosSteerDrive()
+: impl_(std::make_unique<GazeboRosSteerDrivePrivate>())
 {
 }
 
-GazeboRosDiffDrive::~GazeboRosDiffDrive()
+GazeboRosSteerDrive::~GazeboRosSteerDrive()
 {
 }
 
-void GazeboRosDiffDrive::Load(gazebo::physics::ModelPtr _model, sdf::ElementPtr _sdf)
+void GazeboRosSteerDrive::Load(gazebo::physics::ModelPtr _model, sdf::ElementPtr _sdf)
 {
   impl_->model_ = _model;
 
@@ -233,12 +233,12 @@ void GazeboRosDiffDrive::Load(gazebo::physics::ModelPtr _model, sdf::ElementPtr 
 // Get joints
   impl_->steers_.resize(2);
   auto left_steer = _sdf->Get<std::string>("left_steer", "left_steer").first;
-  impl_->steers_[GazeboRosDiffDrivePrivate::STEER] = _model->GetJoint(left_steer);
+  impl_->steers_[GazeboRosSteerDrivePrivate::STEER] = _model->GetJoint(left_steer);
   auto right_steer = _sdf->Get<std::string>("right_steer", "right_steer").first;
-  impl_->steers_[GazeboRosDiffDrivePrivate::STEER_1] = _model->GetJoint(right_steer);
+  impl_->steers_[GazeboRosSteerDrivePrivate::STEER_1] = _model->GetJoint(right_steer);
 
 // Check joint availability
-  if (!impl_->steers_[GazeboRosDiffDrivePrivate::STEER]||!impl_->steers_[GazeboRosDiffDrivePrivate::STEER_1])
+  if (!impl_->steers_[GazeboRosSteerDrivePrivate::STEER]||!impl_->steers_[GazeboRosSteerDrivePrivate::STEER_1])
   {
     RCLCPP_ERROR(impl_->ros_node_->get_logger(),
       "Joint [%s] or [%s] not found, plugin will not work.", left_steer.c_str(),right_steer.c_str());
@@ -255,15 +255,15 @@ void GazeboRosDiffDrive::Load(gazebo::physics::ModelPtr _model, sdf::ElementPtr 
   impl_->max_steer_accel_ = _sdf->Get<double>("max_steer_acceleration", 0.0).first;
   impl_->max_steer_torque_ = _sdf->Get<double>("max_steer_torque", 5.0).first;
   impl_->max_steer_vel_ = _sdf->Get<double>("max_steer_vel", 0.5 ).first;
-  impl_->steers_[GazeboRosDiffDrivePrivate::STEER]->SetParam("fmax", 0, impl_->max_steer_torque_);
-  impl_->steers_[GazeboRosDiffDrivePrivate::STEER_1]->SetParam("fmax", 0, impl_->max_steer_torque_);
+  impl_->steers_[GazeboRosSteerDrivePrivate::STEER]->SetParam("fmax", 0, impl_->max_steer_torque_);
+  impl_->steers_[GazeboRosSteerDrivePrivate::STEER_1]->SetParam("fmax", 0, impl_->max_steer_torque_);
 
 
 // Set dependent values
   impl_->travel_ = pow(impl_->max_steer_vel_,2.0)/impl_->max_steer_accel_;
-  impl_->steers_[GazeboRosDiffDrivePrivate::STEER]->SetPosition(0,0.0000);
+  impl_->steers_[GazeboRosSteerDrivePrivate::STEER]->SetPosition(0,0.0000);
 
-  impl_->steers_[GazeboRosDiffDrivePrivate::STEER_1]->SetPosition(0,0.0000);
+  impl_->steers_[GazeboRosSteerDrivePrivate::STEER_1]->SetPosition(0,0.0000);
 
 // Update rate  
   auto update_rate = _sdf->Get<double>("update_rate", 1000.0).first;
@@ -300,7 +300,7 @@ void GazeboRosDiffDrive::Load(gazebo::physics::ModelPtr _model, sdf::ElementPtr 
 ////  Angle
 
 // Steer subscriber
-  impl_->steer_angle_sub_ = impl_->ros_node_->create_subscription<std_msgs::msg::Float64>("steer_angle",rclcpp::QoS(rclcpp::KeepLast(1)), std::bind(&GazeboRosDiffDrivePrivate::OnSteerAngle, impl_.get(),std::placeholders::_1));
+  impl_->steer_angle_sub_ = impl_->ros_node_->create_subscription<std_msgs::msg::Float64>("steer_angle",rclcpp::QoS(rclcpp::KeepLast(1)), std::bind(&GazeboRosSteerDrivePrivate::OnSteerAngle, impl_.get(),std::placeholders::_1));
   RCLCPP_INFO(impl_->ros_node_->get_logger(), "Publish steer angle on [%s]",impl_->steer_angle_sub_->get_topic_name());
 //
 
@@ -308,7 +308,7 @@ void GazeboRosDiffDrive::Load(gazebo::physics::ModelPtr _model, sdf::ElementPtr 
 ////  Velocity
 
 // Steer subscriber
-  impl_->steer_vel_sub_ = impl_->ros_node_->create_subscription<std_msgs::msg::Float64>("steer_vel",rclcpp::QoS(rclcpp::KeepLast(1)), std::bind(&GazeboRosDiffDrivePrivate::OnSteerVel, impl_.get(),std::placeholders::_1));
+  impl_->steer_vel_sub_ = impl_->ros_node_->create_subscription<std_msgs::msg::Float64>("steer_vel",rclcpp::QoS(rclcpp::KeepLast(1)), std::bind(&GazeboRosSteerDrivePrivate::OnSteerVel, impl_.get(),std::placeholders::_1));
   RCLCPP_INFO(impl_->ros_node_->get_logger(), "Publish steer vel on [%s]",impl_->steer_vel_sub_->get_topic_name());
 //
   }
@@ -317,7 +317,7 @@ void GazeboRosDiffDrive::Load(gazebo::physics::ModelPtr _model, sdf::ElementPtr 
   else
   {
     impl_->steer_angle_sub_ = impl_->ros_node_->create_subscription<std_msgs::msg::Float64>("steer_vel_ang",rclcpp::QoS(rclcpp::KeepLast(1)), 
-      std::bind(&GazeboRosDiffDrivePrivate::OnSteerVelAngle, impl_.get(),std::placeholders::_1));
+      std::bind(&GazeboRosSteerDrivePrivate::OnSteerVelAngle, impl_.get(),std::placeholders::_1));
     RCLCPP_INFO(impl_->ros_node_->get_logger(), "Subscribed to [%s] for FING Angle",impl_->steer_angle_sub_->get_topic_name());
   }
 
@@ -430,7 +430,7 @@ void GazeboRosDiffDrive::Load(gazebo::physics::ModelPtr _model, sdf::ElementPtr 
 
   impl_->cmd_vel_sub_ = impl_->ros_node_->create_subscription<geometry_msgs::msg::Twist>(
     "cmd_vel", rclcpp::QoS(rclcpp::KeepLast(1)),
-    std::bind(&GazeboRosDiffDrivePrivate::OnCmdVel, impl_.get(), std::placeholders::_1));
+    std::bind(&GazeboRosSteerDrivePrivate::OnCmdVel, impl_.get(), std::placeholders::_1));
 
   RCLCPP_INFO(impl_->ros_node_->get_logger(), "Subscribed to [%s]",
     impl_->cmd_vel_sub_->get_topic_name());
@@ -438,7 +438,7 @@ void GazeboRosDiffDrive::Load(gazebo::physics::ModelPtr _model, sdf::ElementPtr 
   // Odometry
   impl_->odometry_frame_ = _sdf->Get<std::string>("odometry_frame", "odom").first;
   impl_->robot_base_frame_ = _sdf->Get<std::string>("robot_base_frame", "base_footprint").first;
-  impl_->odom_source_ = static_cast<GazeboRosDiffDrivePrivate::OdomSource>(
+  impl_->odom_source_ = static_cast<GazeboRosSteerDrivePrivate::OdomSource>(
     _sdf->Get<int>("odometry_source", 1).first);
 
   // Advertise odometry topic
@@ -469,8 +469,8 @@ void GazeboRosDiffDrive::Load(gazebo::physics::ModelPtr _model, sdf::ElementPtr 
         RCLCPP_INFO(impl_->ros_node_->get_logger(),
           "Publishing wheel transforms between [%s], [%s] and [%s]",
           impl_->robot_base_frame_.c_str(),
-          impl_->joints_[2 * index + GazeboRosDiffDrivePrivate::LEFT]->GetName().c_str(),
-          impl_->joints_[2 * index + GazeboRosDiffDrivePrivate::RIGHT]->GetName().c_str());
+          impl_->joints_[2 * index + GazeboRosSteerDrivePrivate::LEFT]->GetName().c_str(),
+          impl_->joints_[2 * index + GazeboRosSteerDrivePrivate::RIGHT]->GetName().c_str());
       }
     }
   } 
@@ -481,20 +481,20 @@ void GazeboRosDiffDrive::Load(gazebo::physics::ModelPtr _model, sdf::ElementPtr 
 
   // Listen to the update event (broadcast every simulation iteration)
   impl_->update_connection_ = gazebo::event::Events::ConnectWorldUpdateBegin(
-    std::bind(&GazeboRosDiffDrivePrivate::OnUpdate, impl_.get(), std::placeholders::_1));
+    std::bind(&GazeboRosSteerDrivePrivate::OnUpdate, impl_.get(), std::placeholders::_1));
 }
 
-void GazeboRosDiffDrive::Reset()
+void GazeboRosSteerDrive::Reset()
 {
   impl_->last_update_time_ =
-    impl_->joints_[GazeboRosDiffDrivePrivate::LEFT]->GetWorld()->SimTime();
+    impl_->joints_[GazeboRosSteerDrivePrivate::LEFT]->GetWorld()->SimTime();
   for (unsigned int i = 0; i < impl_->num_wheel_pairs_; ++i) {
-    if (impl_->joints_[2 * i + GazeboRosDiffDrivePrivate::LEFT] &&
-      impl_->joints_[2 * i + GazeboRosDiffDrivePrivate::RIGHT])
+    if (impl_->joints_[2 * i + GazeboRosSteerDrivePrivate::LEFT] &&
+      impl_->joints_[2 * i + GazeboRosSteerDrivePrivate::RIGHT])
     {
-      impl_->joints_[2 * i + GazeboRosDiffDrivePrivate::LEFT]->SetParam(
+      impl_->joints_[2 * i + GazeboRosSteerDrivePrivate::LEFT]->SetParam(
         "fmax", 0, impl_->max_wheel_torque_);
-      impl_->joints_[2 * i + GazeboRosDiffDrivePrivate::RIGHT]->SetParam(
+      impl_->joints_[2 * i + GazeboRosSteerDrivePrivate::RIGHT]->SetParam(
         "fmax", 0, impl_->max_wheel_torque_);
     }
   }
@@ -505,7 +505,7 @@ void GazeboRosDiffDrive::Reset()
   impl_->target_rot_ = 0;
 }
 
-void GazeboRosDiffDrivePrivate::OnUpdate(const gazebo::common::UpdateInfo & _info)
+void GazeboRosSteerDrivePrivate::OnUpdate(const gazebo::common::UpdateInfo & _info)
 {
   // Update encoder even if we're going to skip this update
   if (odom_source_ == ENCODER) {
@@ -684,7 +684,7 @@ End
   last_update_time_ = _info.simTime;
 }
 
-void GazeboRosDiffDrivePrivate::UpdateWheelVelocities()
+void GazeboRosSteerDrivePrivate::UpdateWheelVelocities()
 {
   std::lock_guard<std::mutex> scoped_lock(lock_);
 
@@ -697,14 +697,14 @@ void GazeboRosDiffDrivePrivate::UpdateWheelVelocities()
   }
 }
 
-void GazeboRosDiffDrivePrivate::OnCmdVel(const geometry_msgs::msg::Twist::SharedPtr _msg)
+void GazeboRosSteerDrivePrivate::OnCmdVel(const geometry_msgs::msg::Twist::SharedPtr _msg)
 {
   std::lock_guard<std::mutex> scoped_lock(lock_);
   target_x_ = _msg->linear.x;
   target_rot_ = _msg->angular.z;
 }
 
-void GazeboRosDiffDrivePrivate::UpdateOdometryEncoder(const gazebo::common::Time & _current_time)
+void GazeboRosSteerDrivePrivate::UpdateOdometryEncoder(const gazebo::common::Time & _current_time)
 {
   double vl = joints_[LEFT]->GetVelocity(0);
   double vr = joints_[RIGHT]->GetVelocity(0);
@@ -751,7 +751,7 @@ void GazeboRosDiffDrivePrivate::UpdateOdometryEncoder(const gazebo::common::Time
   odom_.twist.twist.linear.y = 0;
 }
 
-void GazeboRosDiffDrivePrivate::UpdateOdometryWorld()
+void GazeboRosSteerDrivePrivate::UpdateOdometryWorld()
 {
   auto pose = model_->WorldPose();
   odom_.pose.pose.position = gazebo_ros::Convert<geometry_msgs::msg::Point>(pose.Pos());
@@ -767,7 +767,7 @@ void GazeboRosDiffDrivePrivate::UpdateOdometryWorld()
   odom_.twist.twist.linear.y = cosf(yaw) * linear.Y() - sinf(yaw) * linear.X();
 }
 
-void GazeboRosDiffDrivePrivate::PublishOdometryTf(const gazebo::common::Time & _current_time)
+void GazeboRosSteerDrivePrivate::PublishOdometryTf(const gazebo::common::Time & _current_time)
 {
   geometry_msgs::msg::TransformStamped msg;
   msg.header.stamp = gazebo_ros::Convert<builtin_interfaces::msg::Time>(_current_time);
@@ -780,7 +780,7 @@ void GazeboRosDiffDrivePrivate::PublishOdometryTf(const gazebo::common::Time & _
   transform_broadcaster_->sendTransform(msg);
 }
 
-void GazeboRosDiffDrivePrivate::PublishWheelsTf(const gazebo::common::Time & _current_time)
+void GazeboRosSteerDrivePrivate::PublishWheelsTf(const gazebo::common::Time & _current_time)
 {
   for (unsigned int i = 0; i < 2 * num_wheel_pairs_; ++i) {
     auto pose_wheel = joints_[i]->GetChild()->RelativePose();
@@ -796,7 +796,7 @@ void GazeboRosDiffDrivePrivate::PublishWheelsTf(const gazebo::common::Time & _cu
   }
 }
 
-void GazeboRosDiffDrivePrivate::PublishOdometryMsg(const gazebo::common::Time & _current_time)
+void GazeboRosSteerDrivePrivate::PublishOdometryMsg(const gazebo::common::Time & _current_time)
 {
   // Set covariance
   odom_.pose.covariance[0] = covariance_[0];
@@ -824,7 +824,7 @@ void GazeboRosDiffDrivePrivate::PublishOdometryMsg(const gazebo::common::Time & 
 
 
 /* NEW */
-void GazeboRosDiffDrivePrivate::OnSteerAngle(const std_msgs::msg::Float64::SharedPtr str_amsg_)
+void GazeboRosSteerDrivePrivate::OnSteerAngle(const std_msgs::msg::Float64::SharedPtr str_amsg_)
 {
   std::lock_guard<std::mutex> scoped_lock(lock_);
   desired_steer_angle_ = (str_amsg_->data*pi)/180.00;
@@ -845,7 +845,7 @@ void GazeboRosDiffDrivePrivate::OnSteerAngle(const std_msgs::msg::Float64::Share
 
 }
 // Set desired velocity
-void GazeboRosDiffDrivePrivate::OnSteerVel(const std_msgs::msg::Float64::SharedPtr str_vmsg_)
+void GazeboRosSteerDrivePrivate::OnSteerVel(const std_msgs::msg::Float64::SharedPtr str_vmsg_)
 {
   std::lock_guard<std::mutex> scoped_lock(lock_);
   desired_steer_vel_ = str_vmsg_->data;;
@@ -867,7 +867,7 @@ void GazeboRosDiffDrivePrivate::OnSteerVel(const std_msgs::msg::Float64::SharedP
 }
 
 // Set desired Position with auto vel
-void GazeboRosDiffDrivePrivate::OnSteerVelAngle(const std_msgs::msg::Float64::SharedPtr str_vamsg_){
+void GazeboRosSteerDrivePrivate::OnSteerVelAngle(const std_msgs::msg::Float64::SharedPtr str_vamsg_){
   std::lock_guard<std::mutex> scoped_lock(lock_);
   desired_steer_angle_ = (str_vamsg_->data*pi)/180.00;
   init_steer_angle = steers_[STEER]->Position(0);
@@ -907,12 +907,12 @@ void GazeboRosDiffDrivePrivate::OnSteerVelAngle(const std_msgs::msg::Float64::Sh
 //Angle Status Publish
 
 
-void GazeboRosDiffDrivePrivate::PublishAngleStatus()
+void GazeboRosSteerDrivePrivate::PublishAngleStatus()
 {
   joint_state_pub_->publish(joint_state);
   steer_state_pub_->publish(steer_state);
 }
 
 
-GZ_REGISTER_MODEL_PLUGIN(GazeboRosDiffDrive)
+GZ_REGISTER_MODEL_PLUGIN(GazeboRosSteerDrive)
 }  // namespace gazebo_plugins
